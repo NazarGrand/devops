@@ -1,3 +1,1 @@
 # devops
-
-New entry
