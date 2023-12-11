@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Шлях до файлу логу
+log_file="/var/log/my-app.log"
+
+# Інформація про Redis
+redis_host="localhost"
+redis_port="6379"
+redis_db="0"
+
+# Функція для отримання інформації про файл та запису в Redis
+update_redis() {
+  file_size=$(stat -c %s "$log_file")
+  file_date=$(stat -c %Y "$log_file")
+
+  # Команда redis-cli для запису інформації
+  redis-cli -h "$redis_host" -p "$redis_port" -n "$redis_db" SET "log_file_info" "Size: $file_size, Last Modified: $file_date"
+}
+
+# Порівняння часу останньої модифікації з часом в Redis та виклик функції у разі змін
+if [ "$(stat -c %Y "$log_file")" -ne "$(redis-cli -h "$redis_host" -p "$redis_port" -n "$redis_db" GET "log_file_info" 2>/dev/null)" ]; then
+  update_redis
+fi
